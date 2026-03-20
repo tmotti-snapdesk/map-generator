@@ -178,7 +178,28 @@ def render_floor_plan(
         # Wood grain lines (horizontal stripes)
         _draw_wood_grain(draw, poly, floor_color)
 
-    # --- Draw walls ---
+    # --- Draw walls (exterior only — skip shared interior edges) ---
+    all_rooms = list(room_map.values())
+    TOL = 0.01
+
+    def has_neighbor_north(r):
+        for other in all_rooms:
+            if other is r:
+                continue
+            if abs((other["y"] + other["h"]) - r["y"]) < TOL:
+                if min(r["x"] + r["w"], other["x"] + other["w"]) - max(r["x"], other["x"]) > TOL:
+                    return True
+        return False
+
+    def has_neighbor_west(r):
+        for other in all_rooms:
+            if other is r:
+                continue
+            if abs((other["x"] + other["w"]) - r["x"]) < TOL:
+                if min(r["y"] + r["h"], other["y"] + other["h"]) - max(r["y"], other["y"]) > TOL:
+                    return True
+        return False
+
     for zone in zones_sorted:
         r = room_map.get(zone.room_id)
         if not r:
@@ -187,12 +208,12 @@ def render_floor_plan(
             r["x"], r["y"], r["w"], r["h"],
             plan_px_w, plan_px_h, scale, ox, oy
         )
-        # North wall (top edge in planometric view)
-        wall_n = extrude_wall_north(poly, WALL_HEIGHT)
-        draw.polygon(wall_n, fill=COLORS["wall_top"], outline=COLORS["wall"])
-        # West wall
-        wall_w = extrude_wall_west(poly, WALL_HEIGHT)
-        draw.polygon(wall_w, fill=COLORS["wall_side"], outline=COLORS["wall"])
+        if not has_neighbor_north(r):
+            wall_n = extrude_wall_north(poly, WALL_HEIGHT)
+            draw.polygon(wall_n, fill=COLORS["wall_top"], outline=COLORS["wall"])
+        if not has_neighbor_west(r):
+            wall_w = extrude_wall_west(poly, WALL_HEIGHT)
+            draw.polygon(wall_w, fill=COLORS["wall_side"], outline=COLORS["wall"])
 
     # --- Draw furniture ---
     for zone in zones_sorted:

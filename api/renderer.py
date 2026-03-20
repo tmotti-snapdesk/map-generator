@@ -195,6 +195,36 @@ def render_floor_plan(
         _draw_wood_grain(draw, poly, floor_color)
 
     # --- Draw walls (north + west faces for 3D depth) ---
+    # Only draw a wall face if there's no adjacent room on that side (exterior walls only)
+    all_rooms = list(room_map.values())
+    TOL = 0.01  # tolerance for adjacency check
+
+    def has_neighbor_north(r):
+        """True if another room shares the north edge of r (i.e. room directly above)."""
+        for other in all_rooms:
+            if other is r:
+                continue
+            # other's south edge == r's north edge and x-ranges overlap
+            if abs((other["y"] + other["h"]) - r["y"]) < TOL:
+                ox_l = max(r["x"], other["x"])
+                ox_r = min(r["x"] + r["w"], other["x"] + other["w"])
+                if ox_r - ox_l > TOL:
+                    return True
+        return False
+
+    def has_neighbor_west(r):
+        """True if another room shares the west edge of r (i.e. room directly to the left)."""
+        for other in all_rooms:
+            if other is r:
+                continue
+            # other's east edge == r's west edge and y-ranges overlap
+            if abs((other["x"] + other["w"]) - r["x"]) < TOL:
+                oy_t = max(r["y"], other["y"])
+                oy_b = min(r["y"] + r["h"], other["y"] + other["h"])
+                if oy_b - oy_t > TOL:
+                    return True
+        return False
+
     for zone in zones_sorted:
         r = room_map.get(zone.room_id)
         if not r:
@@ -203,10 +233,12 @@ def render_floor_plan(
             r["x"], r["y"], r["w"], r["h"],
             plan_px_w, plan_px_h, scale, ox, oy
         )
-        wall_n = extrude_wall_north(poly, WALL_HEIGHT)
-        draw.polygon(wall_n, fill=COLORS["wall_top"], outline=COLORS["wall"])
-        wall_w = extrude_wall_west(poly, WALL_HEIGHT)
-        draw.polygon(wall_w, fill=COLORS["wall_side"], outline=COLORS["wall"])
+        if not has_neighbor_north(r):
+            wall_n = extrude_wall_north(poly, WALL_HEIGHT)
+            draw.polygon(wall_n, fill=COLORS["wall_top"], outline=COLORS["wall"])
+        if not has_neighbor_west(r):
+            wall_w = extrude_wall_west(poly, WALL_HEIGHT)
+            draw.polygon(wall_w, fill=COLORS["wall_side"], outline=COLORS["wall"])
 
     # --- Draw furniture ---
     for zone in zones_sorted:
