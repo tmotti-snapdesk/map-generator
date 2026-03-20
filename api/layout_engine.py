@@ -75,21 +75,21 @@ def _has_lounge(n_people: int, total_area_m2: float) -> bool:
 
 # (label, m² per person, density_key)
 DENSITY_SCENARIOS = [
-    ("Densité maximale", 5, "dense"),
-    ("Option aérée", 10, "airy"),
+    ("Scénario compact",  6.5, "compact"),
+    ("Scénario aéré",     8.0, "airy"),
 ]
 
 
 def compute_scenarios(floor_plan: dict, area_m2: float) -> list[dict]:
     """
-    Given the parsed floor plan and total surface (m²), compute 3 layout
-    scenarios at different densities.
+    Given the parsed floor plan and total surface (m²), compute 2 layout
+    scenarios at different densities (6.5 m²/poste and 8 m²/poste).
     Returns a list of dicts: {label, density, n_people, zones}
     """
     results = []
     for label, m2_per_person, density in DENSITY_SCENARIOS:
         n_people = max(1, round(area_m2 / m2_per_person))
-        zones = compute_layout(floor_plan, n_people)
+        zones = compute_layout(floor_plan, n_people, m2_per_person)
         results.append({
             "label": label,
             "density": density,
@@ -198,7 +198,7 @@ def _lounge_furniture() -> list[FurnitureItem]:
 # Main layout function
 # ---------------------------------------------------------------------------
 
-def compute_layout(floor_plan: dict, n_people: int) -> list[Zone]:
+def compute_layout(floor_plan: dict, n_people: int, m2_per_person: float = 8.0) -> list[Zone]:
     """
     Given the parsed floor plan and number of collaborators,
     return a list of Zone objects with furniture assigned.
@@ -271,7 +271,12 @@ def compute_layout(floor_plan: dict, n_people: int) -> list[Zone]:
 
     for room in unassigned:
         rid = room["id"]
+        rtype = room.get("type", "other")
         area = room_area(room)
+
+        # Never reassign a room already identified as openspace by the parser
+        if rtype == "openspace":
+            continue
 
         if need_kitchen and area >= 12:
             zones.append(Zone(
@@ -336,8 +341,8 @@ def compute_layout(floor_plan: dict, n_people: int) -> list[Zone]:
     for room in openspace_rooms:
         rid = room["id"]
         area = room_area(room)
-        # estimate desks that fit: ~8m² per person
-        desks = min(remaining_openspace, max(1, int(area / 8)))
+        # estimate desks that fit based on scenario density
+        desks = min(remaining_openspace, max(1, int(area / m2_per_person)))
         remaining_openspace -= desks
         zones.append(Zone(
             room_id=rid,

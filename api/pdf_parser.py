@@ -65,13 +65,13 @@ Return a JSON object with this exact structure:
   "notes": "<any observations about the floor plan shape, special features, etc.>"
 }
 
-Rules:
-- Coordinates are normalized: (0,0) = top-left corner of the bounding box of the whole plan
-- The outline lists the polygon vertices of the floor plan perimeter (for non-rectangular plans)
-- For a simple rectangle, outline = 4 corners
-- Estimate real-world dimensions from context clues (scale bar, text annotations, typical room sizes)
-- If no scale is visible, estimate based on typical office spaces (standard desk = 1.4x0.7m, door = 0.9m wide)
-- Identify ALL distinct enclosed spaces as rooms
+CRITICAL RULES:
+1. OPEN SPACES: A large open area with no floor-to-ceiling walls dividing it MUST be represented as ONE single room, even if it contains multiple furniture groups or clusters. Do NOT split an openspace into multiple rooms based on furniture placement.
+2. WALL DETECTION: Only create a new room when there is an actual solid wall (continuous line) fully enclosing a separate space. Low partitions, glass partitions, or furniture rows do NOT create separate rooms.
+3. BUILDING FOOTPRINT: The outline polygon must trace the EXACT exterior perimeter of the building. For non-rectangular buildings (L-shape, T-shape, irregular), list every corner vertex precisely.
+4. DIMENSIONS: Use scale bars, text annotations (e.g. "5.89m"), or door widths (standard = 0.90m) to estimate real-world dimensions as accurately as possible.
+5. ROOM TYPES: Use "openspace" for any large undivided work area, "meeting_room" only for fully enclosed rooms with a door, "corridor" for circulation zones, "other" for ambiguous spaces.
+6. COORDINATES: (0,0) = top-left corner of the plan's bounding box. All x/y/w/h are normalized 0.0–1.0 relative to the plan's bounding box (not the full image).
 - Return ONLY the JSON, no explanation"""
 
 
