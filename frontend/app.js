@@ -28,15 +28,15 @@ dropZone.addEventListener("drop", (e) => {
   }
 });
 
-// --- People +/- buttons ---
-const peopleInput = document.getElementById("people-input");
+// --- Area +/- buttons ---
+const areaInput = document.getElementById("area-input");
 document.getElementById("btn-minus").addEventListener("click", () => {
-  const v = parseInt(peopleInput.value, 10);
-  if (v > 1) peopleInput.value = v - 1;
+  const v = parseInt(areaInput.value, 10);
+  if (v > 10) areaInput.value = Math.max(10, v - 10);
 });
 document.getElementById("btn-plus").addEventListener("click", () => {
-  const v = parseInt(peopleInput.value, 10);
-  if (v < 500) peopleInput.value = v + 1;
+  const v = parseInt(areaInput.value, 10);
+  if (v < 10000) areaInput.value = Math.min(10000, v + 10);
 });
 
 // --- Progress helpers ---
@@ -46,7 +46,6 @@ function setStep(n) {
     el.classList.remove("active", "done");
     if (i < n) el.classList.add("done");
     else if (i === n) el.classList.add("active");
-    // Update done dot text
     if (i < n) el.querySelector(".step-dot").textContent = "✓";
     else el.querySelector(".step-dot").textContent = String(i);
   }
@@ -70,6 +69,33 @@ function setSubmitLoading(loading) {
     : "Générer le plan";
 }
 
+// --- Render scenario cards ---
+function renderScenarios(scenarios) {
+  const container = document.getElementById("scenarios-container");
+  container.innerHTML = "";
+
+  const densityLabels = { low: "Flex", medium: "Standard", high: "Dense" };
+
+  for (const s of scenarios) {
+    const imgSrc = `data:image/png;base64,${s.image}`;
+    const filename = `plan_${s.density}_${s.n_people}p.png`;
+
+    const card = document.createElement("div");
+    card.className = "scenario-card";
+    card.innerHTML = `
+      <div class="scenario-header">
+        <span class="scenario-title">${s.label}</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="scenario-badge">${s.n_people} postes</span>
+          <a href="${imgSrc}" download="${filename}" class="btn-download">⬇ Télécharger</a>
+        </div>
+      </div>
+      <img src="${imgSrc}" class="scenario-img" alt="${s.label}" />
+    `;
+    container.appendChild(card);
+  }
+}
+
 // --- Form submit ---
 document.getElementById("gen-form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -77,14 +103,14 @@ document.getElementById("gen-form").addEventListener("submit", async (e) => {
   document.getElementById("result-section").style.display = "none";
 
   const file = pdfInput.files[0];
-  const people = parseInt(peopleInput.value, 10);
+  const area = parseFloat(areaInput.value);
 
   if (!file) {
     showError("Veuillez sélectionner un fichier PDF.");
     return;
   }
-  if (!people || people < 1) {
-    showError("Le nombre de collaborateurs doit être au moins 1.");
+  if (!area || area < 10) {
+    showError("La surface doit être d'au moins 10 m².");
     return;
   }
 
@@ -92,15 +118,13 @@ document.getElementById("gen-form").addEventListener("submit", async (e) => {
   showProgress(true);
   setStep(1);
 
-  // Simulate step progression (the server does it all at once;
-  // we animate the steps as time passes)
   const stepTimer1 = setTimeout(() => setStep(2), 3000);
   const stepTimer2 = setTimeout(() => setStep(3), 6000);
 
   try {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("people", String(people));
+    formData.append("area_m2", String(area));
 
     const resp = await fetch(`${API_BASE}/api/generate`, {
       method: "POST",
@@ -115,19 +139,12 @@ document.getElementById("gen-form").addEventListener("submit", async (e) => {
       throw new Error(err.detail || "Erreur serveur");
     }
 
-    setStep(4); // all done
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
+    setStep(4);
+    const data = await resp.json();
+
+    renderScenarios(data.scenarios);
 
     const resultSection = document.getElementById("result-section");
-    const resultImg = document.getElementById("result-img");
-    const downloadLink = document.getElementById("download-link");
-    const resultTitle = document.getElementById("result-title");
-
-    resultImg.src = url;
-    downloadLink.href = url;
-    downloadLink.download = `plan_${people}p.png`;
-    resultTitle.textContent = `Plan d'aménagement ${people}p`;
     resultSection.style.display = "block";
     resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
 
