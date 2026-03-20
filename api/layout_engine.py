@@ -75,9 +75,8 @@ def _has_lounge(n_people: int, total_area_m2: float) -> bool:
 
 # (label, m² per person, density_key)
 DENSITY_SCENARIOS = [
-    ("Flex / Télétravail", 12, "low"),
-    ("Standard", 8, "medium"),
-    ("Open space dense", 5, "high"),
+    ("Densité maximale", 5, "dense"),
+    ("Option aérée", 10, "airy"),
 ]
 
 

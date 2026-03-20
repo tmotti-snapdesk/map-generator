@@ -22,41 +22,42 @@ from layout_engine import Zone, FurnitureItem
 # Color palette (HomeByMe-inspired warm tones)
 # ---------------------------------------------------------------------------
 COLORS = {
-    "background": (240, 240, 238),
-    "floor_wood": (222, 196, 152),
-    "floor_wood_alt": (210, 182, 138),
-    "wall": (180, 160, 120),
-    "wall_side": (160, 140, 100),
-    "wall_top": (200, 185, 155),
-    "openspace": (225, 205, 160),
-    "meeting_room": (210, 195, 155),
-    "kitchen": (200, 188, 150),
-    "bathroom": (185, 178, 165),
-    "entrance": (215, 205, 175),
-    "phonebooth": (195, 185, 165),
-    "lounge": (205, 192, 158),
-    "corridor": (215, 208, 192),
-    "storage": (190, 183, 170),
-    "other": (210, 200, 175),
+    "background": (18, 20, 26),
+    "floor_wood": (42, 52, 48),
+    "floor_wood_alt": (36, 44, 42),
+    "wall": (22, 24, 30),
+    "wall_side": (15, 17, 22),
+    "wall_top": (35, 40, 48),
+    # zone floors — distinct dark tones
+    "openspace": (38, 58, 52),        # dark teal-green
+    "meeting_room": (38, 44, 68),     # dark blue-slate
+    "kitchen": (58, 50, 36),          # dark amber
+    "bathroom": (34, 46, 56),         # dark steel blue
+    "entrance": (50, 44, 56),         # dark mauve
+    "phonebooth": (48, 38, 52),       # dark purple
+    "lounge": (52, 42, 40),           # dark terracotta
+    "corridor": (32, 36, 40),         # dark neutral
+    "storage": (28, 32, 30),          # very dark
+    "other": (36, 38, 44),
     # furniture
-    "desk": (235, 215, 175),
-    "desk_shadow": (180, 155, 110),
-    "chair": (120, 100, 80),
-    "chair_seat": (90, 72, 55),
-    "meeting_table": (205, 178, 130),
-    "kitchen_counter": (180, 162, 130),
-    "dining_table": (205, 178, 130),
-    "sofa": (130, 115, 100),
-    "sofa_cushion": (155, 138, 120),
-    "coffee_table": (190, 168, 128),
-    "plant_pot": (140, 110, 85),
-    "plant_leaves": (85, 118, 75),
-    "toilet_body": (230, 228, 222),
-    "sink_body": (225, 223, 218),
-    "label_line": (80, 80, 80),
-    "label_text": (40, 40, 40),
-    "title_text": (30, 30, 30),
-    "grid": (200, 190, 170),
+    "desk": (62, 78, 70),
+    "desk_shadow": (14, 16, 20),
+    "chair": (28, 34, 42),
+    "chair_seat": (22, 26, 34),
+    "meeting_table": (52, 62, 88),
+    "kitchen_counter": (72, 62, 44),
+    "dining_table": (62, 72, 50),
+    "sofa": (72, 52, 48),
+    "sofa_cushion": (88, 64, 58),
+    "coffee_table": (58, 52, 44),
+    "plant_pot": (64, 44, 32),
+    "plant_leaves": (42, 88, 56),
+    "toilet_body": (44, 52, 58),
+    "sink_body": (40, 50, 56),
+    "label_line": (120, 140, 160),
+    "label_text": (200, 210, 220),
+    "title_text": (230, 235, 242),
+    "grid": (30, 34, 40),
 }
 
 WALL_HEIGHT = 18   # pixels of wall extrusion
@@ -239,7 +240,7 @@ def _draw_wood_grain(draw: ImageDraw.ImageDraw, poly: list, base_color: tuple):
         return
     ys = [p[1] for p in poly]
     y_min, y_max = min(ys), max(ys)
-    grain_color = tuple(max(0, c - 12) for c in base_color[:3])
+    grain_color = tuple(max(0, c - 8) for c in base_color[:3])
     step = 6
     y = y_min + step
     while y < y_max:
