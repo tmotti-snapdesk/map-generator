@@ -127,6 +127,7 @@ def render_floor_plan(
     zones: list[Zone],
     n_people: int,
     output_size: tuple[int, int] = (1400, 900),
+    title: Optional[str] = None,
 ) -> bytes:
     """
     Render the floor plan with zones and furniture.
@@ -215,7 +216,7 @@ def render_floor_plan(
     _draw_labels(draw, img, label_positions, W, H, oy)
 
     # --- Title ---
-    _draw_title(draw, f"Plan d'aménagement {n_people}p", W)
+    _draw_title(draw, title or f"Plan d'aménagement {n_people}p", W)
 
     # --- Legend ---
     _draw_legend(draw, zones, W, H)

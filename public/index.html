@@ -311,6 +311,51 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Scenario cards */
+    #scenarios-container {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      width: 100%;
+    }
+
+    .scenario-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      width: 100%;
+    }
+
+    .scenario-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .scenario-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .scenario-badge {
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+
+    .scenario-img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
   </style>
 </head>
 <body>
@@ -337,14 +382,17 @@
     </div>
 
     <div class="form-group">
-      <label>Nombre de collaborateurs</label>
+      <label>Surface totale <span>(m²)</span></label>
       <div class="people-input-wrap">
         <button type="button" class="people-btn" id="btn-minus">−</button>
-        <input type="number" id="people-input" name="people"
-               value="18" min="1" max="500" required />
+        <input type="number" id="area-input" name="area_m2"
+               value="200" min="10" max="10000" step="10" required />
         <button type="button" class="people-btn" id="btn-plus">+</button>
-        <span class="people-hint">personnes</span>
+        <span class="people-hint">m²</span>
       </div>
+      <p style="margin-top:8px; font-size:0.8rem; color:var(--muted);">
+        3 scénarios seront générés automatiquement : Flex, Standard, Dense.
+      </p>
     </div>
 
     <button type="submit" class="btn-generate" id="btn-submit">
@@ -374,15 +422,7 @@
 </div>
 
 <div class="result-section" id="result-section">
-  <div class="result-card">
-    <div class="result-header">
-      <span class="result-title" id="result-title">Plan généré</span>
-      <a id="download-link" class="btn-download" download>
-        ⬇ Télécharger
-      </a>
-    </div>
-    <img id="result-img" class="result-img" alt="Plan généré" />
-  </div>
+  <div id="scenarios-container"></div>
 </div>
 
 <script src="app.js"></script>

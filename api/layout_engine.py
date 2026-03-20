@@ -1,7 +1,7 @@
 """
 Layout Engine: assigns zones and furniture to rooms based on:
 - the parsed floor plan (rooms + dimensions)
-- the number of collaborators
+- the number of collaborators (derived from area + density scenario)
 - business rules
 """
 
@@ -67,6 +67,37 @@ def _has_phonebooth(n_people: int, total_area_m2: float) -> bool:
 
 def _has_lounge(n_people: int, total_area_m2: float) -> bool:
     return n_people >= 20 and total_area_m2 >= 200
+
+
+# ---------------------------------------------------------------------------
+# Scenario generation (replaces manual people count)
+# ---------------------------------------------------------------------------
+
+# (label, m² per person, density_key)
+DENSITY_SCENARIOS = [
+    ("Flex / Télétravail", 12, "low"),
+    ("Standard", 8, "medium"),
+    ("Open space dense", 5, "high"),
+]
+
+
+def compute_scenarios(floor_plan: dict, area_m2: float) -> list[dict]:
+    """
+    Given the parsed floor plan and total surface (m²), compute 3 layout
+    scenarios at different densities.
+    Returns a list of dicts: {label, density, n_people, zones}
+    """
+    results = []
+    for label, m2_per_person, density in DENSITY_SCENARIOS:
+        n_people = max(1, round(area_m2 / m2_per_person))
+        zones = compute_layout(floor_plan, n_people)
+        results.append({
+            "label": label,
+            "density": density,
+            "n_people": n_people,
+            "zones": zones,
+        })
+    return results
 
 
 # ---------------------------------------------------------------------------
